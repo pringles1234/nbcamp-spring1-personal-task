@@ -16,4 +16,4 @@
 
 ### ⛓️ERD
 
-![image-20240813214511244](C:\Users\db904\AppData\Roaming\Typora\typora-user-images\image-20240813214511244.png)
+![image-20240813214511244](assets/image-20240813214511244.png)
