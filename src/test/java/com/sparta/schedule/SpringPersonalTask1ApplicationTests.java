@@ -1,4 +1,4 @@
-package com.sparta.springpersonaltask1;
+package com.sparta.schedule;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

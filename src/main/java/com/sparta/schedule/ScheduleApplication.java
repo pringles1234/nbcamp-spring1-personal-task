@@ -1,13 +1,13 @@
-package com.sparta.springpersonaltask1;
+package com.sparta.schedule;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringPersonalTask1Application {
+public class ScheduleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringPersonalTask1Application.class, args);
+        SpringApplication.run(ScheduleApplication.class, args);
     }
 
 }
