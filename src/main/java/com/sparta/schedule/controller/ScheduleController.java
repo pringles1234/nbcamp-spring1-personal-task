@@ -47,16 +47,28 @@ public class ScheduleController {
                 },
                 keyHolder);
 
-//        // DB Insert 후 받아온 기본키 확인
+        // DB Insert 후 받아온 기본키 확인
         Long id = keyHolder.getKey().longValue();
         schedule.setSchedule_id(id);
-//
+
         // Entity -> CreatescheduleResponseDto
         CreateScheduleResponseDto createScheduleResponseDto = new CreateScheduleResponseDto(schedule);
 
         return createScheduleResponseDto;
     }
 
+    @PutMapping("/schedule/{id}")
+    public Object getScheduleById(@PathVariable(value = "id") Long schedule_id) {
+        // 해당 메모가 DB에 존재하는지 확인
+        Schedule schedule = findById(schedule_id);
+
+        if (schedule != null) {
+            // 일정 데이터 반환
+            return new CheckListResponseDto(schedule.getSchedule_id(), schedule.getUser_name(), schedule.getEvent(), schedule.getUpdated_dateTime().toLocalDate());
+        } else {
+            return "선택한 일정은 존재하지 않습니다.";
+        }
+    }
 
 
     @GetMapping("/schedule")
