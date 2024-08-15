@@ -3,6 +3,7 @@ package com.sparta.schedule.controller;
 import com.sparta.schedule.dto.CheckListResponseDto;
 import com.sparta.schedule.dto.CreateScheduleRequestDto;
 import com.sparta.schedule.dto.CreateScheduleResponseDto;
+import com.sparta.schedule.dto.ModifyScheduleRequestDto;
 import com.sparta.schedule.entity.Schedule;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -51,7 +52,7 @@ public class ScheduleController {
 
         // DB Insert 후 받아온 기본키 확인
         Long id = keyHolder.getKey().longValue();
-        schedule.setUser_id(id);
+        schedule.setSchedule_id(id);
 
         // Entity -> CreatescheduleResponseDto
         CreateScheduleResponseDto createScheduleResponseDto = new CreateScheduleResponseDto(schedule);
@@ -69,14 +70,47 @@ public class ScheduleController {
             @Override
             public CheckListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                 // SQL 의 결과로 받아온 Memo 데이터들을 CheckListResponseDto 타입으로 변환해줄 메서드
-                Long user_id = rs.getLong("user_id");
+                Long schedule_id = rs.getLong("schedule_id");
                 String user_name = rs.getString("user_name");
                 String event = rs.getString("event");
                 LocalDateTime updated_dateTime = rs.getTimestamp("updated_date").toLocalDateTime();
                 LocalDate updated_date = updated_dateTime.toLocalDate();
-                return new CheckListResponseDto(user_id, user_name, event, updated_date);
+                return new CheckListResponseDto(schedule_id, user_name, event, updated_date);
             }
         });
+    }
+
+    @PutMapping("/schedule/{id}")
+    public Long updateSchedule(@PathVariable(value="id") Long schedule_id, @RequestBody ModifyScheduleRequestDto requestDto){
+        //해당 메모가 DB에 존재하는지 확인
+        Schedule schedule = findById(schedule_id);
+        System.out.println("schedule = " + schedule);
+        if(schedule != null) {
+            // memo 내용 수정
+            String sql = "UPDATE schedule SET user_name = ?, password = ?, event = ? WHERE schedule_id = ?";
+            jdbcTemplate.update(sql, requestDto.getUser_name(), requestDto.getPassword(), requestDto.getEvent(), schedule_id);
+
+            return schedule_id;
+        } else {
+            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
+        }
+    }
+
+    private Schedule findById(Long schedule_id) {
+        // DB 조회
+        String sql = "SELECT * FROM schedule WHERE schedule_id = ?";
+
+        return jdbcTemplate.query(sql, resultSet -> {
+            if(resultSet.next()) {
+                Schedule schedule = new Schedule();
+                schedule.setUser_name(resultSet.getString("user_name"));
+                schedule.setPassword(resultSet.getString("password"));
+                schedule.setEvent(resultSet.getString("event"));
+                return schedule;
+            } else {
+                return null;
+            }
+        }, schedule_id);
     }
 
 }

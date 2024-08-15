@@ -12,13 +12,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor // 기본 생성자 자동 생성
 public class Schedule {
 
-    private Long user_id;
+    private Long schedule_id;
     private String user_name;
     private String password;
     private String event;
     private LocalDateTime created_dateTime;
     private LocalDateTime updated_dateTime;
     private LocalDate update_date;
+
+    public void setSchdule_id(Long scheduleid){
+        this.schedule_id = scheduleid;
+    }
+
+    public Long getSchedule_id(){
+        return this.schedule_id;
+    }
 
     public Schedule(CreateScheduleRequestDto createScheduleRequestDto) {
         this.user_name = createScheduleRequestDto.getUser_name();
