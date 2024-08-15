@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -57,16 +56,17 @@ public class ScheduleController {
         return createScheduleResponseDto;
     }
 
-    @PutMapping("/schedule/{id}")
-    public Object getScheduleById(@PathVariable(value = "id") Long schedule_id) {
+    @GetMapping("/schedule/{id}")
+    public CheckListResponseDto getScheduleById(@PathVariable(value = "id") Long schedule_id) {
         // 해당 메모가 DB에 존재하는지 확인
         Schedule schedule = findById(schedule_id);
 
         if (schedule != null) {
+            LocalDateTime currentTime = LocalDateTime.now();
             // 일정 데이터 반환
-            return new CheckListResponseDto(schedule.getSchedule_id(), schedule.getUser_name(), schedule.getEvent(), schedule.getUpdated_dateTime().toLocalDate());
+            return new CheckListResponseDto(schedule_id, schedule.getUser_name(),schedule.getEvent(), currentTime);
         } else {
-            return "선택한 일정은 존재하지 않습니다.";
+            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
         }
     }
 
@@ -83,9 +83,10 @@ public class ScheduleController {
                 Long schedule_id = rs.getLong("schedule_id");
                 String user_name = rs.getString("user_name");
                 String event = rs.getString("event");
+
                 LocalDateTime updated_dateTime = rs.getTimestamp("updated_date").toLocalDateTime();
-                LocalDate updated_date = updated_dateTime.toLocalDate();
-                return new CheckListResponseDto(schedule_id, user_name, event, updated_date);
+
+                return new CheckListResponseDto(schedule_id, user_name, event, updated_dateTime);
             }
         });
     }
