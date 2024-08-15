@@ -1,9 +1,6 @@
 package com.sparta.schedule.controller;
 
-import com.sparta.schedule.dto.CheckListResponseDto;
-import com.sparta.schedule.dto.CreateScheduleRequestDto;
-import com.sparta.schedule.dto.CreateScheduleResponseDto;
-import com.sparta.schedule.dto.ModifyScheduleRequestDto;
+import com.sparta.schedule.dto.*;
 import com.sparta.schedule.entity.Schedule;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -60,6 +57,8 @@ public class ScheduleController {
         return createScheduleResponseDto;
     }
 
+
+
     @GetMapping("/schedule")
     public List<CheckListResponseDto> getScheduleAll(){
         // DB 조회
@@ -80,33 +79,44 @@ public class ScheduleController {
     }
 
     @PutMapping("/schedule/{id}")
-    public Long updateSchedule(@PathVariable(value="id") Long schedule_id, @RequestBody ModifyScheduleRequestDto requestDto){
+    public String updateSchedule(@PathVariable(value="id") Long schedule_id, @RequestBody ModifyScheduleRequestDto modifyrequestDto){
         //해당 메모가 DB에 존재하는지 확인
         Schedule schedule = findById(schedule_id);
-        System.out.println("schedule = " + schedule);
-        if(schedule != null) {
-            // memo 내용 수정
-            String sql = "UPDATE schedule SET user_name = ?, password = ?, event = ? WHERE schedule_id = ?";
-            jdbcTemplate.update(sql, requestDto.getUser_name(), requestDto.getPassword(), requestDto.getEvent(), schedule_id);
 
-            return schedule_id;
+        if (schedule != null) {
+            // 요청된 비밀번호와 DB의 비밀번호가 일치하는지 확인
+            if (schedule.getPassword().equals(modifyrequestDto.getPassword())) {
+                // 비밀번호가 일치할 경우 메모 내용 수정
+                String sql = "UPDATE schedule SET user_name = ?, event = ? WHERE schedule_id = ?";
+                jdbcTemplate.update(sql, modifyrequestDto.getUser_name(), modifyrequestDto.getEvent(), schedule_id);
+                return String.valueOf(schedule_id);
+            } else {
+                return "비밀번호가 일치하지 않습니다.";
+//                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            }
         } else {
-            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
+            return "선택한 일정은 존재하지 않습니다.";
+//            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
         }
     }
 
     @DeleteMapping("/schedule/{id}")
-    public Long deleteMemo(@PathVariable(value="id")Long schedule_id) {
+    public String deleteMemo(@PathVariable(value="id")Long schedule_id, @RequestBody DeleteScheduleRequestDto deleterequestDto) {
         // 해당 메모가 DB에 존재하는지 확인
         Schedule schedule = findById(schedule_id);
         if(schedule != null) {
-            // memo 삭제
-            String sql = "DELETE FROM schedule WHERE schedule_id = ?";
-            jdbcTemplate.update(sql, schedule_id);
-
-            return schedule_id;
+            // 요청된 비밀번호와 DB의 비밀번호가 일치하는지 확인
+            if(schedule.getPassword().equals(deleterequestDto.getPassword())){
+                String sql = "DELETE FROM schedule WHERE schedule_id = ?";
+                jdbcTemplate.update(sql, schedule_id);
+                return String.valueOf(schedule_id);
+            }else{
+                return "비밀번호가 일치하지 않습니다.";
+                //throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            }
         } else {
-            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
+            return "선택한 일정은 존재하지 않습니다.";
+            //throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
         }
     }
 
