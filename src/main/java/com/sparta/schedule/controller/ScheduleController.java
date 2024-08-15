@@ -11,10 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +35,7 @@ public class ScheduleController {
         //DB 저장
         KeyHolder keyHolder = new GeneratedKeyHolder(); // 기본 키를 반환받기 위한 객체
 
-        String sql = "INSERT INTO schedule (user_name, password, event) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO schedule (user_name, password, event, created_date, updated_date) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update( con -> {
                     PreparedStatement preparedStatement = con.prepareStatement(sql,
                             Statement.RETURN_GENERATED_KEYS);
@@ -46,19 +43,21 @@ public class ScheduleController {
                     preparedStatement.setString(1, schedule.getUser_name());
                     preparedStatement.setString(2, schedule.getPassword());
                     preparedStatement.setString(3, schedule.getEvent());
+
+                    preparedStatement.setTimestamp(4, Timestamp.valueOf(schedule.getCreated_dateTime()));
+                    preparedStatement.setTimestamp(5, Timestamp.valueOf(schedule.getUpdated_dateTime()));
                     return preparedStatement;
                 },
                 keyHolder);
 
-        // DB Insert 후 받아온 기본키 확인
+//        // DB Insert 후 받아온 기본키 확인
         Long id = keyHolder.getKey().longValue();
         schedule.setSchedule_id(id);
-
+//
         // Entity -> CreatescheduleResponseDto
         CreateScheduleResponseDto createScheduleResponseDto = new CreateScheduleResponseDto(schedule);
 
         return createScheduleResponseDto;
-
     }
 
     @GetMapping("/schedule")
@@ -96,6 +95,21 @@ public class ScheduleController {
         }
     }
 
+    @DeleteMapping("/schedule/{id}")
+    public Long deleteMemo(@PathVariable(value="id")Long schedule_id) {
+        // 해당 메모가 DB에 존재하는지 확인
+        Schedule schedule = findById(schedule_id);
+        if(schedule != null) {
+            // memo 삭제
+            String sql = "DELETE FROM schedule WHERE schedule_id = ?";
+            jdbcTemplate.update(sql, schedule_id);
+
+            return schedule_id;
+        } else {
+            throw new IllegalArgumentException("선택한 일정은 존재하지 않습니다.");
+        }
+    }
+
     private Schedule findById(Long schedule_id) {
         // DB 조회
         String sql = "SELECT * FROM schedule WHERE schedule_id = ?";
@@ -112,5 +126,7 @@ public class ScheduleController {
             }
         }, schedule_id);
     }
+
+
 
 }
